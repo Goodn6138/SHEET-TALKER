@@ -1,4 +1,4 @@
-import { X, Mic, Square, Loader2, FileText } from 'lucide-react'
+import { X, Mic, Square, Loader2 } from 'lucide-react'
 import ChatMessage from './ChatMessage'
 import AudioVisualizer from './AudioVisualizer'
 
@@ -7,8 +7,8 @@ function ChatPanel({ isOpen, onClose, messages, isRecording, isProcessing, onTog
     <div className={`chat-panel ${isOpen ? 'open' : ''}`}>
       <div className="chat-header">
         <div className="chat-header-left">
-          <h2>Sheet Assistant</h2>
-          {hasSheetData && <span className="sheet-status">🟢 Active</span>}
+          {/* REMOVED "Sheet Assistant" TEXT - just show status if needed */}
+          {hasSheetData && <span className="sheet-status">🟢 Ready</span>}
         </div>
         <button className="close-btn" onClick={onClose}>
           <X size={20} />
@@ -22,8 +22,8 @@ function ChatPanel({ isOpen, onClose, messages, isRecording, isProcessing, onTog
             <p>Press the mic button to start talking</p>
             <p className="empty-subtitle">
               {hasSheetData 
-                ? "I can help you analyze and modify your spreadsheet" 
-                : "Upload a spreadsheet first, then ask me about it"}
+                ? "Ask me about your spreadsheet data" 
+                : "Upload an Excel file first, then ask me about it"}
             </p>
           </div>
         ) : (
