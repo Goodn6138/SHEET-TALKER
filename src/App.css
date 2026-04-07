@@ -43,6 +43,7 @@ html, body, #root {
   align-items: center;
   gap: 16px;
   min-width: 0;
+  flex: 1;
 }
 
 .header h1 {
@@ -62,7 +63,7 @@ html, body, #root {
   font-size: 13px;
   font-weight: 500;
   border: 1px solid #c7d2fe;
-  max-width: 250px;
+  max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -175,7 +176,7 @@ html, body, #root {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-/* Spreadsheet - CRITICAL FOR HORIZONTAL LAYOUT */
+/* Spreadsheet - FIXED LAYOUT */
 .spreadsheet-wrapper {
   height: 100%;
   width: 100%;
@@ -186,47 +187,35 @@ html, body, #root {
   border: 1px solid #e0e0e0;
 }
 
-/* react-data-grid specific styles to force horizontal table layout */
+/* react-data-grid styles */
 .rdg {
+  height: 100%;
+  width: 100%;
+  border: none;
+  font-size: 13px;
   --rdg-background-color: white;
   --rdg-border-color: #e5e7eb;
   --rdg-header-background-color: #f9fafb;
   --rdg-row-hover-background-color: #f3f4f6;
   --rdg-selection-color: #3b82f6;
-  
-  height: 100%;
-  width: 100%;
-  border: none;
-  font-size: 13px;
-  display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(100px, auto)) !important;
 }
 
 .rdg-header-row {
-  display: flex !important;
-  flex-direction: row !important;
   background-color: #f9fafb;
   border-bottom: 2px solid #e5e7eb;
   font-weight: 600;
   color: #374151;
-  position: sticky;
-  top: 0;
-  z-index: 1;
 }
 
 .rdg-row {
-  display: flex !important;
-  flex-direction: row !important;
   border-bottom: 1px solid #f3f4f6;
   background-color: white;
 }
 
 .rdg-cell {
-  flex: 1;
-  min-width: 100px;
-  padding: 8px 12px;
   border-right: 1px solid #f3f4f6;
-  display: flex !important;
+  padding: 8px 12px;
+  display: flex;
   align-items: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -240,11 +229,11 @@ html, body, #root {
 }
 
 .rdg-header-cell {
-  padding: 10px 12px;
   font-weight: 600;
   color: #374151;
   background-color: #f9fafb;
   border-right: 1px solid #e5e7eb;
+  padding: 10px 12px;
 }
 
 /* Error state */
@@ -287,6 +276,7 @@ html, body, #root {
   border-bottom: 1px solid #e0e0e0;
   background: #fafafa;
   flex-shrink: 0;
+  min-height: 60px;
 }
 
 .chat-header-left {
@@ -295,18 +285,11 @@ html, body, #root {
   gap: 12px;
 }
 
-.chat-header h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-}
-
 .sheet-status {
-  font-size: 11px;
+  font-size: 12px;
   background: #d1fae5;
   color: #065f46;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 12px;
   font-weight: 600;
 }
@@ -660,31 +643,18 @@ html, body, #root {
   .talk-fab {
     bottom: 20px;
     right: 20px;
-    padding: 14px 18px;
   }
   
   .header {
     padding: 12px 16px;
   }
   
-  .header h1 {
-    font-size: 18px;
-  }
-  
   .file-badge {
-    max-width: 120px;
-  }
-  
-  .grid-container {
-    padding: 10px;
+    max-width: 150px;
   }
 }
 
 @media (max-width: 480px) {
-  .header h1 {
-    font-size: 16px;
-  }
-  
   .file-badge {
     display: none;
   }
