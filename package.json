@@ -1,21 +1,22 @@
 {
   "name": "SHEET-TALKER",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.1",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
-"dependencies": {
-  "react": "^18.2.0",
-  "react-dom": "^18.2.0",
-  "react-data-grid": "7.0.0-beta.34",
-  "xlsx": "^0.18.5"
-},
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-data-grid": "^7.0.0-beta.34",
+    "xlsx": "^0.18.5",
+    "@kushagradhawan/kookie-ui": "^1.1.0"
+  },
   "devDependencies": {
-    "vite": "^5.0.0",
-    "@vitejs/plugin-react": "^4.0.0"
-  }
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.4.0"
+  },
+  "type": "module"
 }
