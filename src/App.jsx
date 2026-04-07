@@ -48,7 +48,7 @@ function App() {
     <div className="app-container">
       {/* HEADER */}
       <div className="header">
-        <h2>Excel Viewer</h2>
+        <h2>SHEET-TALKER</h2>
         <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
       </div>
 
@@ -73,7 +73,7 @@ function App() {
       {/* BUTTON BOTTOM-RIGHT */}
       <button
         className="open-panel-btn"
-        onClick={() => setShowRightPanel(!showRightPanel)} // toggle
+        onClick={() => setShowRightPanel(!showRightPanel)}
       >
         {showRightPanel ? "Close Panel" : "Open Panel"}
       </button>
