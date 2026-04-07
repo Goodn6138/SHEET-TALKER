@@ -4,7 +4,7 @@ import DataGrid from 'react-data-grid'
 import ChatMessage from './components/ChatMessage'
 import AudioVisualizer from './components/AudioVisualizer'
 import * as XLSX from 'xlsx'
-import 'react-data-grid/lib/styles.css' // IMPORTANT: Import default styles
+import 'react-data-grid/lib/styles.css'
 import './App.css'
 
 function App() {
@@ -20,7 +20,6 @@ function App() {
   const audioChunksRef = useRef([])
   const fileInputRef = useRef(null)
 
-  // Your exact working parse logic
   const handleFileUpload = (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -40,15 +39,31 @@ function App() {
       if (!jsonData.length) return
 
       const headers = jsonData[0]
-      const cols = headers.map((header, i) => ({
-        key: `col_${i}`,
-        name: header || `Column ${i + 1}`,
-        editable: true,
-        resizable: true,
-      }))
+      
+      // Create Excel-style columns with row number column first
+      const cols = [
+        {
+          key: 'rowNum',
+          name: '', // Empty header for row numbers like Excel
+          width: 50,
+          frozen: true,
+          resizable: false,
+          sortable: false,
+          renderCell: ({ rowIdx }) => (
+            <div className="row-number">{rowIdx + 1}</div>
+          )
+        },
+        ...headers.map((header, i) => ({
+          key: `col_${i}`,
+          name: header || `Column ${i + 1}`,
+          editable: true,
+          resizable: true,
+          width: Math.max(100, header?.length * 10 || 100),
+        }))
+      ]
 
       const formattedRows = jsonData.slice(1).map((row, i) => {
-        const obj = { id: i }
+        const obj = { id: i, rowNum: i + 1 }
         row.forEach((cell, j) => {
           obj[`col_${j}`] = cell
         })
@@ -123,7 +138,6 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Header */}
       <div className="header">
         <div className="header-left">
           <h2>SHEET TALKER</h2>
@@ -141,7 +155,6 @@ function App() {
         </button>
       </div>
 
-      {/* Grid - Exact original structure */}
       <div className="grid-container">
         {columns.length === 0 ? (
           <div className="empty-state" onClick={() => fileInputRef.current?.click()}>
@@ -150,16 +163,19 @@ function App() {
             <p>.xlsx and .xls only</p>
           </div>
         ) : (
-          <DataGrid
-            columns={columns}
-            rows={rows}
-            onRowsChange={setRows}
-            style={{ height: '100%' }}
-          />
+          <div className="excel-wrapper">
+            <DataGrid
+              columns={columns}
+              rows={rows}
+              onRowsChange={setRows}
+              className="excel-grid"
+              rowHeight={25}
+              headerRowHeight={30}
+            />
+          </div>
         )}
       </div>
 
-      {/* Right Panel */}
       {showRightPanel && (
         <div className="right-panel">
           <div className="panel-header">
@@ -168,7 +184,6 @@ function App() {
               <X size={20} />
             </button>
           </div>
-
           <div className="panel-messages">
             {messages.length === 0 ? (
               <div className="empty-chat">
@@ -181,7 +196,6 @@ function App() {
             )}
             {isProcessing && <div className="processing">Processing...</div>}
           </div>
-
           <div className="panel-input">
             {isRecording && <AudioVisualizer />}
             <button 
@@ -195,7 +209,6 @@ function App() {
         </div>
       )}
 
-      {/* Talk Button */}
       {!showRightPanel && (
         <button 
           className={`open-panel-btn ${isRecording ? 'recording' : ''}`}
