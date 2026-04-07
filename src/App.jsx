@@ -40,30 +40,32 @@ function App() {
 
       const headers = jsonData[0]
       
-      // Create Excel-style columns with row number column first
+      // Columns with row number column first
       const cols = [
         {
           key: 'rowNum',
-          name: '', // Empty header for row numbers like Excel
+          name: '', // Excel-style empty header for row numbers
           width: 50,
           frozen: true,
           resizable: false,
           sortable: false,
-          renderCell: ({ rowIdx }) => (
-            <div className="row-number">{rowIdx + 1}</div>
-          )
+          renderCell: ({ row }) => <div className="row-number">{row.rowNum}</div>
         },
         ...headers.map((header, i) => ({
           key: `col_${i}`,
           name: header || `Column ${i + 1}`,
           editable: true,
           resizable: true,
-          width: Math.max(100, header?.length * 10 || 100),
+          width: Math.max(120, header?.length * 9 || 120), // Wider columns for scrolling
         }))
       ]
 
+      // FIXED: Store rowNum as actual data property
       const formattedRows = jsonData.slice(1).map((row, i) => {
-        const obj = { id: i, rowNum: i + 1 }
+        const obj = { 
+          id: i, 
+          rowNum: i + 1 // Store the actual row number here
+        }
         row.forEach((cell, j) => {
           obj[`col_${j}`] = cell
         })
@@ -169,8 +171,9 @@ function App() {
               rows={rows}
               onRowsChange={setRows}
               className="excel-grid"
-              rowHeight={25}
-              headerRowHeight={30}
+              rowHeight={24}
+              headerRowHeight={28}
+              style={{ width: '100%', height: '100%' }}
             />
           </div>
         )}
