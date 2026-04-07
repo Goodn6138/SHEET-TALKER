@@ -62,13 +62,13 @@ h2 {
 
 .upload-btn:hover { background: #f3f3f3; }
 
-/* Grid Container */
+/* Grid Container - IMPORTANT: overflow settings for horizontal scroll */
 .grid-container {
   flex: 1;
-  padding: 0;
   min-height: 0;
-  overflow: auto;
+  overflow: auto; /* Both horizontal and vertical scroll */
   background: #f5f5f5;
+  padding: 0;
 }
 
 .empty-state {
@@ -87,30 +87,36 @@ h2 {
 
 .empty-state h3 { margin: 16px 0 8px; color: #333; font-weight: 500; }
 
-/* Excel-like Wrapper */
+/* Excel Wrapper - Important for horizontal scrolling */
 .excel-wrapper {
   height: 100%;
-  width: 100%;
+  min-width: 100%; /* Allows horizontal expansion */
   background: white;
   border: 1px solid #d4d4d4;
+  overflow: visible; /* Let DataGrid handle scrolling */
 }
 
-/* Excel Grid Styling Overrides */
+/* Excel Grid Styling */
 .excel-grid {
   --rdg-background-color: white;
   --rdg-border-color: #d4d4d4;
   --rdg-header-background-color: #f3f3f3;
   --rdg-row-hover-background-color: #e8f4ff;
-  --rdg-selection-color: #217346; /* Excel green */
+  --rdg-selection-color: #217346;
   
   height: 100%;
   width: 100%;
   border: none;
-  font-size: 13px;
+  font-size: 12px;
   font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-/* Header Row - Excel Style */
+/* Ensure grid allows horizontal scroll by not constraining width */
+.excel-grid .rdg {
+  overflow-x: auto !important;
+}
+
+/* Header Row */
 .excel-grid .rdg-header-row {
   background-color: #f3f3f3 !important;
   border-bottom: 1px solid #d4d4d4 !important;
@@ -128,26 +134,23 @@ h2 {
   font-size: 12px;
 }
 
-/* Row Numbers Column - Excel Style */
+/* Row Numbers */
 .row-number {
   color: #666;
-  font-size: 12px;
+  font-size: 11px;
   text-align: center;
   width: 100%;
-  font-weight: 400;
+  font-weight: 500;
 }
 
-.excel-grid .rdg-cell[data-column='rowNum'] {
+.excel-grid [data-column='rowNum'] {
   background-color: #f3f3f3 !important;
   border-right: 1px solid #d4d4d4 !important;
-  text-align: center;
-  padding: 0;
-  display: flex;
-  align-items: center;
   justify-content: center;
+  padding: 0;
 }
 
-/* Data Cells - Excel Grid Lines */
+/* Data Cells */
 .excel-grid .rdg-cell {
   border-right: 1px solid #e0e0e0 !important;
   border-bottom: 1px solid #e0e0e0 !important;
@@ -160,12 +163,11 @@ h2 {
 }
 
 .excel-grid .rdg-cell:focus {
-  outline: 2px solid #217346 !important; /* Excel green border */
+  outline: 2px solid #217346 !important;
   outline-offset: -2px;
   background-color: #e8f4ff !important;
 }
 
-/* Selected Row Highlight */
 .excel-grid .rdg-row:hover {
   background-color: #e8f4ff !important;
 }
