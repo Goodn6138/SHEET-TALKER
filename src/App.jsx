@@ -4,6 +4,7 @@ import DataGrid from 'react-data-grid'
 import ChatMessage from './components/ChatMessage'
 import AudioVisualizer from './components/AudioVisualizer'
 import * as XLSX from 'xlsx'
+import 'react-data-grid/lib/styles.css' // IMPORTANT: Import default styles
 import './App.css'
 
 function App() {
@@ -24,7 +25,6 @@ function App() {
     const file = e.target.files[0]
     if (!file) return
 
-    // Excel only
     if (!file.name.match(/\.(xlsx|xls)$/i)) {
       alert('Please upload an Excel file (.xlsx or .xls)')
       return
@@ -63,7 +63,6 @@ function App() {
     reader.readAsArrayBuffer(file)
   }
 
-  // Audio handlers
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -111,13 +110,7 @@ function App() {
         { id: Date.now() + 1, type: 'assistant', content: data.response, timestamp: new Date().toLocaleTimeString() }
       ])
     } catch (error) {
-      setMessages(prev => [...prev, { 
-        id: Date.now(), 
-        type: 'assistant', 
-        content: 'Connection failed', 
-        timestamp: new Date().toLocaleTimeString(),
-        isError: true 
-      }])
+      setMessages(prev => [...prev, { id: Date.now(), type: 'assistant', content: 'Connection failed', timestamp: new Date().toLocaleTimeString(), isError: true }])
     } finally {
       setIsProcessing(false)
     }
@@ -130,7 +123,7 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Header - no chat icon */}
+      {/* Header */}
       <div className="header">
         <div className="header-left">
           <h2>SHEET TALKER</h2>
@@ -143,12 +136,12 @@ function App() {
           onChange={handleFileUpload}
           style={{ display: 'none' }}
         />
-        <button className="icon-btn" onClick={() => fileInputRef.current?.click()}>
+        <button className="upload-btn" onClick={() => fileInputRef.current?.click()}>
           <Upload size={20} />
         </button>
       </div>
 
-      {/* Grid - exact original structure */}
+      {/* Grid - Exact original structure */}
       <div className="grid-container">
         {columns.length === 0 ? (
           <div className="empty-state" onClick={() => fileInputRef.current?.click()}>
@@ -166,11 +159,11 @@ function App() {
         )}
       </div>
 
-      {/* Right Panel - no "Sheet Assistant" title */}
+      {/* Right Panel */}
       {showRightPanel && (
         <div className="right-panel">
           <div className="panel-header">
-            <span></span> {/* Empty */}
+            <span></span>
             <button className="close-btn" onClick={() => setShowRightPanel(false)}>
               <X size={20} />
             </button>
@@ -202,7 +195,7 @@ function App() {
         </div>
       )}
 
-      {/* Talk button - only way to open */}
+      {/* Talk Button */}
       {!showRightPanel && (
         <button 
           className={`open-panel-btn ${isRecording ? 'recording' : ''}`}
