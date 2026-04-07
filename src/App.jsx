@@ -11,7 +11,6 @@ function App() {
   const [messages, setMessages] = useState([])
   const [isProcessing, setIsProcessing] = useState(false)
   
-  // Sheet data state
   const [sheetData, setSheetData] = useState({
     columns: [],
     rows: []
@@ -23,60 +22,131 @@ function App() {
   const audioChunksRef = useRef([])
   const fileInputRef = useRef(null)
 
-  // File upload handlers
   const handleFileUpload = (file) => {
     if (!file) return
     
+    // Validate file type
+    const validTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv',
+      'application/vnd.ms-excel.sheet.macroEnabled.12'
+    ]
+    
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
+      alert('Please upload a valid Excel file (.xlsx, .xls) or CSV file')
+      return
+    }
+
     const reader = new FileReader()
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result)
-        const workbook = XLSX.read(data, { type: 'array' })
+        const workbook = XLSX.read(data, { 
+          type: 'array',
+          cellFormula: true,
+          cellNF: true,
+          cellStyles: true
+        })
         
         // Get first sheet
         const firstSheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[firstSheetName]
         
-        // Convert to JSON
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+        // Convert to JSON with header: 1 to get array of arrays
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+          header: 1,
+          defval: '',
+          blankrows: false
+        })
         
-        if (jsonData.length > 0) {
-          // First row as headers
-          const headers = jsonData[0]
-          const rows = jsonData.slice(1).map((row, index) => {
-            const obj = { id: index + 1 }
-            headers.forEach((header, i) => {
-              obj[header] = row[i] || ''
-            })
-            return obj
-          })
+        if (jsonData.length === 0) {
+          alert('No data found in the file')
+          return
+        }
 
-          // Create columns for react-data-grid
-          const columns = headers.map((header, index) => ({
-            key: header,
-            name: header,
+        // Filter out completely empty rows
+        const cleanData = jsonData.filter(row => 
+          row.some(cell => cell !== '' && cell !== null && cell !== undefined)
+        )
+
+        if (cleanData.length < 1) {
+          alert('No valid data found in the file')
+          return
+        }
+
+        // First row as headers
+        const rawHeaders = cleanData[0]
+        
+        // Create safe keys for columns (handle duplicates, special chars, empty headers)
+        const headerMap = new Map()
+        const columns = rawHeaders.map((header, index) => {
+          let baseKey = String(header || `Column_${index + 1}`)
+            .trim()
+            .replace(/[^a-zA-Z0-9_]/g, '_')
+            .replace(/^_+|_+$/g, '')
+          
+          if (!baseKey || baseKey === '') baseKey = `Column_${index + 1}`
+          
+          // Handle duplicates
+          let uniqueKey = baseKey
+          let counter = 1
+          while (headerMap.has(uniqueKey)) {
+            uniqueKey = `${baseKey}_${counter}`
+            counter++
+          }
+          headerMap.set(uniqueKey, header)
+          
+          return {
+            key: uniqueKey,
+            name: String(header || `Column ${index + 1}`),
             resizable: true,
             sortable: true,
             editable: true,
-            width: Math.max(100, header.length * 15)
-          }))
+            width: Math.max(120, String(header).length * 12)
+          }
+        })
 
-          setSheetData({ columns, rows })
-          setFileName(file.name)
-          
-          // Add system message about upload
-          setMessages(prev => [...prev, {
-            id: Date.now(),
-            type: 'assistant',
-            content: `📄 Loaded "${file.name}" with ${rows.length} rows and ${columns.length} columns.`,
-            timestamp: new Date().toLocaleTimeString()
-          }])
-        }
+        // Create rows with proper keys matching columns
+        const rows = cleanData.slice(1).map((row, rowIndex) => {
+          const obj = { id: rowIndex + 1 }
+          columns.forEach((col, colIndex) => {
+            const value = row[colIndex]
+            // Handle different data types
+            if (typeof value === 'number') {
+              obj[col.key] = value
+            } else if (value instanceof Date) {
+              obj[col.key] = value.toISOString().split('T')[0]
+            } else {
+              obj[col.key] = value !== undefined ? String(value) : ''
+            }
+          })
+          return obj
+        })
+
+        console.log('Parsed columns:', columns)
+        console.log('Parsed rows:', rows)
+
+        setSheetData({ columns, rows })
+        setFileName(file.name)
+        
+        setMessages(prev => [...prev, {
+          id: Date.now(),
+          type: 'assistant',
+          content: `📄 Loaded "${file.name}"\n• ${rows.length} rows\n• ${columns.length} columns\n• Headers: ${columns.map(c => c.name).join(', ')}`,
+          timestamp: new Date().toLocaleTimeString()
+        }])
+        
       } catch (error) {
         console.error('Error parsing file:', error)
-        alert('Error parsing file. Please upload a valid Excel or CSV file.')
+        alert(`Error parsing file: ${error.message}`)
       }
     }
+    
+    reader.onerror = () => {
+      alert('Error reading file')
+    }
+    
     reader.readAsArrayBuffer(file)
   }
 
@@ -84,11 +154,7 @@ function App() {
     e.preventDefault()
     setIsDragging(false)
     const file = e.dataTransfer.files[0]
-    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv'))) {
-      handleFileUpload(file)
-    } else {
-      alert('Please upload an Excel file (.xlsx, .xls) or CSV file')
-    }
+    if (file) handleFileUpload(file)
   }
 
   const onDragOver = (e) => {
@@ -102,10 +168,10 @@ function App() {
 
   const onFileInputChange = (e) => {
     const file = e.target.files[0]
-    handleFileUpload(file)
+    if (file) handleFileUpload(file)
   }
 
-  // Audio recording handlers (same as before)
+  // Audio recording handlers
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -146,7 +212,11 @@ function App() {
       const formData = new FormData()
       formData.append('audio', audioBlob, 'recording.wav')
       formData.append('history', JSON.stringify(messages))
-      formData.append('sheetData', JSON.stringify(sheetData))
+      formData.append('sheetContext', JSON.stringify({
+        columns: sheetData.columns.map(c => c.name),
+        rowCount: sheetData.rows.length,
+        sample: sheetData.rows.slice(0, 5)
+      }))
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -173,7 +243,6 @@ function App() {
         }
       ])
 
-      // Handle sheet updates from AI if provided
       if (data.sheetUpdate) {
         setSheetData(data.sheetUpdate)
       }
@@ -211,7 +280,11 @@ function App() {
         <header className="header">
           <div className="header-left">
             <h1>SHEET TALKER</h1>
-            {fileName && <span className="file-badge">📄 {fileName}</span>}
+            {fileName && (
+              <span className="file-badge" title={fileName}>
+                📄 {fileName.length > 20 ? fileName.substring(0, 20) + '...' : fileName}
+              </span>
+            )}
           </div>
           <div className="header-actions">
             <input
@@ -247,8 +320,8 @@ function App() {
           {sheetData.columns.length === 0 ? (
             <div className="empty-upload-state">
               <FileSpreadsheet size={64} className="empty-icon-svg" />
-              <h3>Drop your spreadsheet here</h3>
-              <p>Support for .xlsx, .xls, and .csv files</p>
+              <h3>Drop your Excel file here</h3>
+              <p>Supports .xlsx, .xls, and .csv files</p>
               <button 
                 className="upload-btn-large"
                 onClick={() => fileInputRef.current?.click()}
