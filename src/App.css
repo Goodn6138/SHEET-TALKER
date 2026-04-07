@@ -23,16 +23,126 @@ html, body, #root {
   transition: margin-right 0.3s ease;
 }
 
-.header {
+.header-left {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  gap: 16px;
 }
 
+.file-badge {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #c7d2fe;
+}
+
+.upload-btn {
+  color: #3b82f6;
+}
+
+.upload-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.grid-container.dragging {
+  background: #eff6ff;
+  border: 2px dashed #3b82f6;
+  border-radius: 12px;
+}
+
+.empty-upload-state {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  gap: 16px;
+  animation: fadeIn 0.5s ease;
+}
+
+.empty-icon-svg {
+  color: #d1d5db;
+  margin-bottom: 8px;
+}
+
+.empty-upload-state h3 {
+  margin: 0;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.empty-upload-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.upload-btn-large {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.upload-btn-large:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Spreadsheet styling improvements */
+.spreadsheet-wrapper {
+  height: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.rdg-light {
+  --rdg-background-color: white;
+  --rdg-border-color: #e5e7eb;
+  --rdg-header-background-color: #f9fafb;
+  --rdg-row-hover-background-color: #f3f4f6;
+  --rdg-selection-color: #3b82f6;
+  height: 100%;
+  border: none;
+  font-size: 13px;
+}
+
+.rdg-header-row {
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.rdg-row {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.rdg-cell {
+  border-right: 1px solid #f3f4f6;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+}
+
+.rdg-cell:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
 .header h1 {
   margin: 0;
   font-size: 20px;
