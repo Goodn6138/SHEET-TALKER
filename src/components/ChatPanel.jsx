@@ -1,12 +1,15 @@
-import { X, Mic, Square, Loader2 } from 'lucide-react'
+import { X, Mic, Square, Loader2, FileText } from 'lucide-react'
 import ChatMessage from './ChatMessage'
 import AudioVisualizer from './AudioVisualizer'
 
-function ChatPanel({ isOpen, onClose, messages, isRecording, isProcessing, onToggleRecord }) {
+function ChatPanel({ isOpen, onClose, messages, isRecording, isProcessing, onToggleRecord, hasSheetData }) {
   return (
     <div className={`chat-panel ${isOpen ? 'open' : ''}`}>
       <div className="chat-header">
-        <h2>Sheet Assistant</h2>
+        <div className="chat-header-left">
+          <h2>Sheet Assistant</h2>
+          {hasSheetData && <span className="sheet-status">🟢 Active</span>}
+        </div>
         <button className="close-btn" onClick={onClose}>
           <X size={20} />
         </button>
@@ -17,7 +20,11 @@ function ChatPanel({ isOpen, onClose, messages, isRecording, isProcessing, onTog
           <div className="empty-state">
             <div className="empty-icon">🎤</div>
             <p>Press the mic button to start talking</p>
-            <p className="empty-subtitle">Your spreadsheet assistant is listening</p>
+            <p className="empty-subtitle">
+              {hasSheetData 
+                ? "I can help you analyze and modify your spreadsheet" 
+                : "Upload a spreadsheet first, then ask me about it"}
+            </p>
           </div>
         ) : (
           messages.map((message, index) => (
