@@ -19,9 +19,12 @@ function App() {
   const audioChunksRef = useRef([])
   const fileInputRef = useRef(null)
 
-  // EXACT same parsing as your working original
-  const handleFileUpload = (file) => {
+  // Your exact working parse logic
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0]
     if (!file) return
+
+    // Excel only
     if (!file.name.match(/\.(xlsx|xls)$/i)) {
       alert('Please upload an Excel file (.xlsx or .xls)')
       return
@@ -34,7 +37,6 @@ function App() {
       const sheetName = workbook.SheetNames[0]
       const worksheet = workbook.Sheets[sheetName]
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
-      
       if (!jsonData.length) return
 
       const headers = jsonData[0]
@@ -42,7 +44,7 @@ function App() {
         key: `col_${i}`,
         name: header || `Column ${i + 1}`,
         editable: true,
-        resizable: true
+        resizable: true,
       }))
 
       const formattedRows = jsonData.slice(1).map((row, i) => {
@@ -57,10 +59,11 @@ function App() {
       setRows(formattedRows)
       setFileName(file.name)
     }
+
     reader.readAsArrayBuffer(file)
   }
 
-  // Audio handlers (same as before)
+  // Audio handlers
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -81,7 +84,7 @@ function App() {
       mediaRecorder.start()
       setIsRecording(true)
     } catch (error) {
-      alert('Could not access microphone.')
+      alert('Could not access microphone')
     }
   }, [])
 
@@ -98,7 +101,7 @@ function App() {
       const formData = new FormData()
       formData.append('audio', audioBlob, 'recording.wav')
       formData.append('history', JSON.stringify(messages))
-      
+
       const response = await fetch('/api/chat', { method: 'POST', body: formData })
       const data = await response.json()
       
@@ -108,7 +111,13 @@ function App() {
         { id: Date.now() + 1, type: 'assistant', content: data.response, timestamp: new Date().toLocaleTimeString() }
       ])
     } catch (error) {
-      setMessages(prev => [...prev, { id: Date.now(), type: 'assistant', content: 'Error connecting to backend', timestamp: new Date().toLocaleTimeString(), isError: true }])
+      setMessages(prev => [...prev, { 
+        id: Date.now(), 
+        type: 'assistant', 
+        content: 'Connection failed', 
+        timestamp: new Date().toLocaleTimeString(),
+        isError: true 
+      }])
     } finally {
       setIsProcessing(false)
     }
@@ -119,10 +128,9 @@ function App() {
     else stopRecording()
   }
 
-  const hasData = columns.length > 0
-
   return (
     <div className="app-container">
+      {/* Header - no chat icon */}
       <div className="header">
         <div className="header-left">
           <h2>SHEET TALKER</h2>
@@ -132,37 +140,48 @@ function App() {
           type="file" 
           accept=".xlsx,.xls" 
           ref={fileInputRef}
-          onChange={(e) => handleFileUpload(e.target.files[0])}
+          onChange={handleFileUpload}
           style={{ display: 'none' }}
         />
-        <button className="upload-btn" onClick={() => fileInputRef.current?.click()}>
+        <button className="icon-btn" onClick={() => fileInputRef.current?.click()}>
           <Upload size={20} />
         </button>
       </div>
 
+      {/* Grid - exact original structure */}
       <div className="grid-container">
-        {!hasData ? (
-          <div className="empty-state">
+        {columns.length === 0 ? (
+          <div className="empty-state" onClick={() => fileInputRef.current?.click()}>
             <FileSpreadsheet size={64} />
             <h3>Drop Excel file here</h3>
-            <button onClick={() => fileInputRef.current?.click()}>Choose File</button>
+            <p>.xlsx and .xls only</p>
           </div>
         ) : (
-          <DataGrid columns={columns} rows={rows} onRowsChange={setRows} style={{ height: '100%' }} />
+          <DataGrid
+            columns={columns}
+            rows={rows}
+            onRowsChange={setRows}
+            style={{ height: '100%' }}
+          />
         )}
       </div>
 
+      {/* Right Panel - no "Sheet Assistant" title */}
       {showRightPanel && (
         <div className="right-panel">
           <div className="panel-header">
-            <span></span> {/* Empty - no "Sheet Assistant" text */}
-            <button onClick={() => setShowRightPanel(false)}><X size={20} /></button>
+            <span></span> {/* Empty */}
+            <button className="close-btn" onClick={() => setShowRightPanel(false)}>
+              <X size={20} />
+            </button>
           </div>
-          
+
           <div className="panel-messages">
             {messages.length === 0 ? (
               <div className="empty-chat">
-                <p>🎤 Press Talk to start</p>
+                <div className="big-icon">🎤</div>
+                <p>Press Talk to start speaking</p>
+                <small>{columns.length ? 'Ask about your data' : 'Upload a file first'}</small>
               </div>
             ) : (
               messages.map(m => <ChatMessage key={m.id} message={m} />)
@@ -170,22 +189,26 @@ function App() {
             {isProcessing && <div className="processing">Processing...</div>}
           </div>
 
-          <div className="panel-footer">
+          <div className="panel-input">
             {isRecording && <AudioVisualizer />}
             <button 
-              className={`talk-btn ${isRecording ? 'recording' : ''}`}
+              className={`record-btn ${isRecording ? 'recording' : ''}`}
               onClick={toggleRecording}
               disabled={isProcessing}
             >
-              {isRecording ? 'Stop' : 'Talk'}
+              {isRecording ? '⏹ Stop' : isProcessing ? '⏳' : '🎤 Talk'}
             </button>
           </div>
         </div>
       )}
 
+      {/* Talk button - only way to open */}
       {!showRightPanel && (
-        <button className={`fab ${isRecording ? 'recording' : ''}`} onClick={() => setShowRightPanel(true)}>
-          <Mic size={24} />
+        <button 
+          className={`open-panel-btn ${isRecording ? 'recording' : ''}`}
+          onClick={() => setShowRightPanel(true)}
+        >
+          <Mic size={20} />
           <span>TALK</span>
         </button>
       )}
