@@ -17,9 +17,9 @@ html, body, #root {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 12px 20px;
   background: white;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #d4d4d4;
   flex-shrink: 0;
 }
 
@@ -29,14 +29,19 @@ html, body, #root {
   gap: 16px;
 }
 
-h2 { margin: 0; font-size: 20px; }
+h2 { 
+  margin: 0; 
+  font-size: 18px; 
+  font-weight: 600;
+}
 
 .file-badge {
-  background: #e0e7ff;
-  color: #3730a3;
+  background: #f3f3f3;
+  color: #333;
   padding: 4px 12px;
-  border-radius: 16px;
+  border-radius: 4px;
   font-size: 13px;
+  border: 1px solid #d4d4d4;
   max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -49,18 +54,18 @@ h2 { margin: 0; font-size: 20px; }
   padding: 8px;
   cursor: pointer;
   color: #3b82f6;
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.upload-btn:hover { background: #eff6ff; }
+.upload-btn:hover { background: #f3f3f3; }
 
-/* Grid - CRITICAL: Let DataGrid handle its own layout */
+/* Grid Container */
 .grid-container {
   flex: 1;
-  padding: 20px;
+  padding: 0;
   min-height: 0;
   overflow: auto;
   background: #f5f5f5;
@@ -72,14 +77,102 @@ h2 { margin: 0; font-size: 20px; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: #666;
   cursor: pointer;
-  background: white;
-  border: 2px dashed #e0e0e0;
+  margin: 20px;
+  border: 2px dashed #d4d4d4;
   border-radius: 8px;
+  background: white;
 }
 
-.empty-state h3 { margin: 16px 0 8px; color: #4b5563; }
+.empty-state h3 { margin: 16px 0 8px; color: #333; font-weight: 500; }
+
+/* Excel-like Wrapper */
+.excel-wrapper {
+  height: 100%;
+  width: 100%;
+  background: white;
+  border: 1px solid #d4d4d4;
+}
+
+/* Excel Grid Styling Overrides */
+.excel-grid {
+  --rdg-background-color: white;
+  --rdg-border-color: #d4d4d4;
+  --rdg-header-background-color: #f3f3f3;
+  --rdg-row-hover-background-color: #e8f4ff;
+  --rdg-selection-color: #217346; /* Excel green */
+  
+  height: 100%;
+  width: 100%;
+  border: none;
+  font-size: 13px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Header Row - Excel Style */
+.excel-grid .rdg-header-row {
+  background-color: #f3f3f3 !important;
+  border-bottom: 1px solid #d4d4d4 !important;
+  font-weight: 600;
+  color: #333;
+}
+
+.excel-grid .rdg-header-cell {
+  background-color: #f3f3f3 !important;
+  border-right: 1px solid #d4d4d4 !important;
+  border-bottom: 1px solid #d4d4d4 !important;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+/* Row Numbers Column - Excel Style */
+.row-number {
+  color: #666;
+  font-size: 12px;
+  text-align: center;
+  width: 100%;
+  font-weight: 400;
+}
+
+.excel-grid .rdg-cell[data-column='rowNum'] {
+  background-color: #f3f3f3 !important;
+  border-right: 1px solid #d4d4d4 !important;
+  text-align: center;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Data Cells - Excel Grid Lines */
+.excel-grid .rdg-cell {
+  border-right: 1px solid #e0e0e0 !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.excel-grid .rdg-cell:focus {
+  outline: 2px solid #217346 !important; /* Excel green border */
+  outline-offset: -2px;
+  background-color: #e8f4ff !important;
+}
+
+/* Selected Row Highlight */
+.excel-grid .rdg-row:hover {
+  background-color: #e8f4ff !important;
+}
+
+.excel-grid .rdg-row {
+  background-color: white;
+}
 
 /* Right Panel */
 .right-panel {
@@ -114,12 +207,9 @@ h2 { margin: 0; font-size: 20px; }
   cursor: pointer;
   color: #666;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.close-btn:hover { background: #f0f0f0; }
+.close-btn:hover { background: #f3f3f3; }
 
 .panel-messages {
   flex: 1;
@@ -133,7 +223,7 @@ h2 { margin: 0; font-size: 20px; }
 .empty-chat {
   text-align: center;
   padding: 40px 0;
-  color: #9ca3af;
+  color: #666;
 }
 
 .big-icon { font-size: 48px; margin-bottom: 16px; }
@@ -154,6 +244,7 @@ h2 { margin: 0; font-size: 20px; }
   color: white;
   font-weight: 600;
   cursor: pointer;
+  font-size: 14px;
 }
 
 .record-btn.recording {
@@ -195,19 +286,14 @@ h2 { margin: 0; font-size: 20px; }
   transition: all 0.2s;
 }
 
-.open-panel-btn:hover {
-  transform: scale(1.05);
-}
+.open-panel-btn:hover { transform: scale(1.05); }
 
 .open-panel-btn.recording {
   background: #dc2626;
   animation: pulse 1.5s infinite;
 }
 
-.open-panel-btn span {
-  font-size: 11px;
-  letter-spacing: 0.5px;
-}
+.open-panel-btn span { font-size: 11px; letter-spacing: 0.5px; }
 
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
