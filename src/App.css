@@ -1,0 +1,50 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.grid-container {
+  flex: 1;
+  padding: 20px;
+  min-height: 0; /* allows DataGrid to shrink properly */
+}
+
+.right-panel {
+  width: 300px;
+  background: #fff;
+  border-left: 1px solid #ccc;
+  height: 100%;
+  position: fixed;
+  right: 0;
+  top: 0;
+  padding: 20px;
+  box-shadow: -2px 0px 10px rgba(0,0,0,0.15);
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.open-panel-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 20;
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+}
