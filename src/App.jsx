@@ -2,12 +2,20 @@ import React, { useState } from "react";
 import DataGrid from "react-data-grid";
 import * as XLSX from "xlsx";
 
+// Kookie UI imports
+import {
+  Button,
+  Card,
+  Flex,
+  Text,
+  Box
+} from "@kushagradhawan/kookie-ui";
+
 function App() {
   const [columns, setColumns] = useState([]);
   const [rows, setRows] = useState([]);
-  const [showLeftPanel, setShowLeftPanel] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(false);
 
-  // Handle Excel Upload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -16,10 +24,10 @@ function App() {
     reader.onload = (evt) => {
       const data = new Uint8Array(evt.target.result);
       const workbook = XLSX.read(data, { type: "array" });
-
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
       if (!jsonData.length) return;
 
       const headers = jsonData[0];
@@ -27,7 +35,7 @@ function App() {
         key: `col_${i}`,
         name: header || `Column ${i + 1}`,
         editable: true,
-        resizable: true, // 🔥 adjustable columns
+        resizable: true
       }));
 
       const formattedRows = jsonData.slice(1).map((row, i) => {
@@ -46,87 +54,72 @@ function App() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      {/* LEFT PANEL */}
-      {showLeftPanel && (
-        <div
-          style={{
-            width: "250px",
-            background: "#111",
-            color: "#fff",
-            padding: "20px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <h3>Left Panel</h3>
-          <p>This spans full height</p>
-
-          <button
-            onClick={() => setShowLeftPanel(false)}
-            style={{
-              marginTop: "auto",
-              padding: "10px",
-              background: "#007bff",
-              border: "none",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Close Panel
-          </button>
-        </div>
-      )}
-
+    <Box css={{ display: "flex", height: "100vh", position: "relative" }}>
+      
       {/* MAIN CONTENT */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          height: "100vh",
-        }}
-      >
+      <Box css={{ flex: 1, display: "flex", flexDirection: "column" }}>
+
         {/* HEADER + UPLOAD */}
-        <div style={{ padding: "20px" }}>
-          <h2>Excel Viewer</h2>
+        <Flex justify="between" align="center" css={{ padding: "20px" }}>
+          <Text size="4" weight="bold">Excel Viewer</Text>
           <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
-        </div>
+        </Flex>
 
         {/* GRID */}
-        <div style={{ flex: 1, padding: 20 }}>
+        <Box css={{ flex: 1, padding: "20px" }}>
           <DataGrid
             columns={columns}
             rows={rows}
             onRowsChange={setRows}
             style={{ height: "100%" }}
           />
-        </div>
+        </Box>
 
-        {/* BUTTON BOTTOM */}
-        <div
-          style={{
-            padding: 20,
-            borderTop: "1px solid #ddd",
+      </Box>
+
+      {/* BUTTON TOP-RIGHT */}
+      <Box css={{
+        position: "fixed",
+        top: 20,
+        right: 20,
+        zIndex: 100
+      }}>
+        <Button size="3" onClick={() => setShowRightPanel(true)}>
+          Open Panel
+        </Button>
+      </Box>
+
+      {/* RIGHT PANEL */}
+      {showRightPanel && (
+        <Box
+          css={{
+            width: "300px",
             background: "#fff",
+            borderLeft: "1px solid #e0e0e0",
+            height: "100%",
+            position: "fixed",
+            right: 0,
+            top: 0,
+            padding: "20px",
+            boxShadow: "-2px 0px 8px rgba(0,0,0,0.1)"
           }}
         >
-          <button
-            onClick={() => setShowLeftPanel(true)}
-            style={{
-              width: "100%",
-              padding: "12px",
-              background: "#007bff",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Open Left Panel
-          </button>
-        </div>
-      </div>
-    </div>
+          <Card variant="surface" size="3">
+            <Flex direction="column" gap="3">
+              <Text size="3" weight="bold">Panel Content</Text>
+              <Text size="2">Customize this however you want.</Text>
+              <Button
+                onClick={() => setShowRightPanel(false)}
+                size="2"
+              >
+                Close
+              </Button>
+            </Flex>
+          </Card>
+        </Box>
+      )}
+
+    </Box>
   );
 }
 
