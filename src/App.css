@@ -1,16 +1,15 @@
-* { box-sizing: border-box; }
-
 html, body, #root {
   height: 100%;
   margin: 0;
-  font-family: sans-serif;
-  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Header */
@@ -18,9 +17,10 @@ html, body, #root {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: white;
+  padding: 20px;
   border-bottom: 1px solid #e0e0e0;
+  background: white;
+  flex-shrink: 0;
 }
 
 .header-left {
@@ -43,70 +43,84 @@ h2 { margin: 0; font-size: 20px; }
   white-space: nowrap;
 }
 
-.upload-btn {
+.icon-btn {
   background: none;
   border: none;
   padding: 8px;
   cursor: pointer;
-  color: #3b82f6;
+  color: #666;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.upload-btn:hover { background: #eff6ff; }
+.icon-btn:hover { background: #f0f0f0; }
 
-/* Grid Container - CRITICAL: Let DataGrid handle its own layout */
+/* Grid - DON'T override DataGrid classes here */
 .grid-container {
   flex: 1;
   padding: 20px;
+  min-height: 0;
   overflow: auto;
   background: #f5f5f5;
 }
 
-/* DON'T override DataGrid display properties! */
 .empty-state {
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #999;
-  gap: 16px;
+  color: #9ca3af;
+  cursor: pointer;
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  background: white;
 }
 
-/* Right Panel */
+.empty-state h3 { margin: 16px 0 8px; color: #4b5563; }
+
+/* Right Panel - updated styling */
 .right-panel {
+  width: 350px;
+  background: #fff;
+  border-left: 1px solid #ccc;
+  height: 100%;
   position: fixed;
   right: 0;
   top: 0;
-  width: 350px;
-  height: 100%;
-  background: white;
-  border-left: 1px solid #e0e0e0;
+  box-shadow: -2px 0px 10px rgba(0,0,0,0.15);
+  overflow-y: auto;
+  z-index: 10;
   display: flex;
   flex-direction: column;
-  z-index: 100;
-  box-shadow: -4px 0 20px rgba(0,0,0,0.1);
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 20px;
   border-bottom: 1px solid #e0e0e0;
+  min-height: 60px;
 }
 
-.panel-header button {
+.close-btn {
   background: none;
   border: none;
-  cursor: pointer;
   padding: 4px;
+  cursor: pointer;
+  color: #666;
+  border-radius: 4px;
 }
+
+.close-btn:hover { background: #e0e0e0; }
 
 .panel-messages {
   flex: 1;
+  padding: 20px;
   overflow-y: auto;
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -115,60 +129,85 @@ h2 { margin: 0; font-size: 20px; }
 
 .empty-chat {
   text-align: center;
-  color: #999;
-  margin-top: 40px;
+  padding: 40px 20px;
+  color: #9ca3af;
 }
 
-.panel-footer {
-  padding: 16px;
+.big-icon { font-size: 48px; margin-bottom: 16px; }
+
+.panel-input {
+  padding: 20px;
   border-top: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.talk-btn {
+.record-btn {
   width: 100%;
-  padding: 12px;
-  border-radius: 24px;
-  border: none;
-  background: #3b82f6;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.talk-btn.recording {
-  background: #dc2626;
-  animation: pulse 1.5s infinite;
-}
-
-.talk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* FAB */
-.fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 16px 20px;
+  padding: 14px;
   border-radius: 50px;
   border: none;
   background: #3b82f6;
   color: white;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 90;
 }
 
-.fab.recording { background: #dc2626; }
+.record-btn.recording {
+  background: #dc2626;
+  animation: pulse 1.5s infinite;
+}
 
-.fab span { font-size: 11px; }
+.record-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.processing {
+  align-self: center;
+  padding: 8px 16px;
+  background: white;
+  border-radius: 16px;
+  font-size: 13px;
+  color: #666;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Talk Button */
+.open-panel-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 20;
+  padding: 16px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 50px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transition: transform 0.2s;
+}
+
+.open-panel-btn:hover {
+  transform: scale(1.05);
+}
+
+.open-panel-btn.recording {
+  background: #dc2626;
+  animation: pulse 1.5s infinite;
+}
+
+.open-panel-btn span {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
 
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
@@ -189,12 +228,25 @@ h2 { margin: 0; font-size: 20px; }
   padding: 10px 14px;
   border-radius: 16px;
   font-size: 14px;
+  background: white;
+  border: 1px solid #e0e0e0;
 }
 
-.message.user .bubble { background: #3b82f6; color: white; border-bottom-right-radius: 4px; }
-.message.assistant .bubble { background: white; border: 1px solid #e0e0e0; border-bottom-left-radius: 4px; }
-.message.error .bubble { background: #fee2e2; color: #dc2626; }
+.message.user .bubble {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-bottom-right-radius: 4px;
+}
 
-.time { font-size: 11px; color: #999; margin-top: 2px; }
+.message.assistant .bubble {
+  border-bottom-left-radius: 4px;
+}
 
-.processing { align-self: center; color: #666; font-size: 13px; }
+.message.error .bubble {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.time { font-size: 11px; color: #999; margin-top: 4px; display: block; }
