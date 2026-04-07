@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DataGrid from "react-data-grid";
 import * as XLSX from "xlsx";
-import "./App.css"; // optional for custom styling
+import "./App.css";
 
 function App() {
   const [columns, setColumns] = useState([]);
@@ -67,16 +67,15 @@ function App() {
         <div className="right-panel">
           <h3>Panel Content</h3>
           <p>Add whatever you want here.</p>
-          <button onClick={() => setShowRightPanel(false)}>Close</button>
         </div>
       )}
 
       {/* BUTTON BOTTOM-RIGHT */}
       <button
         className="open-panel-btn"
-        onClick={() => setShowRightPanel(true)}
+        onClick={() => setShowRightPanel(!showRightPanel)} // toggle
       >
-        Open Panel
+        {showRightPanel ? "Close Panel" : "Open Panel"}
       </button>
     </div>
   );
