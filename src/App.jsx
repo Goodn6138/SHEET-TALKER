@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { Mic, X, Upload, FileSpreadsheet } from 'lucide-react'
+import { Mic, X, Upload, FileSpreadsheet, Send } from 'lucide-react'
 import DataGrid from 'react-data-grid'
 import ChatMessage from './components/ChatMessage'
 import AudioVisualizer from './components/AudioVisualizer'
@@ -15,6 +15,7 @@ function App() {
   const [isRecording, setIsRecording] = useState(false)
   const [messages, setMessages] = useState([])
   const [isProcessing, setIsProcessing] = useState(false)
+  const [textInput, setTextInput] = useState('')
   
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
@@ -40,11 +41,10 @@ function App() {
 
       const headers = jsonData[0]
       
-      // Columns with row number column first
       const cols = [
         {
           key: 'rowNum',
-          name: '', // Excel-style empty header for row numbers
+          name: '',
           width: 50,
           frozen: true,
           resizable: false,
@@ -56,15 +56,14 @@ function App() {
           name: header || `Column ${i + 1}`,
           editable: true,
           resizable: true,
-          width: Math.max(120, header?.length * 9 || 120), // Wider columns for scrolling
+          width: Math.max(120, header?.length * 9 || 120),
         }))
       ]
 
-      // FIXED: Store rowNum as actual data property
       const formattedRows = jsonData.slice(1).map((row, i) => {
         const obj = { 
           id: i, 
-          rowNum: i + 1 // Store the actual row number here
+          rowNum: i + 1
         }
         row.forEach((cell, j) => {
           obj[`col_${j}`] = cell
@@ -75,9 +74,70 @@ function App() {
       setColumns(cols)
       setRows(formattedRows)
       setFileName(file.name)
+      
+      setMessages(prev => [...prev, {
+        id: Date.now(),
+        type: 'assistant',
+        content: `📄 Loaded "${file.name}"\n• ${formattedRows.length} rows\n• ${cols.length - 1} columns`,
+        timestamp: new Date().toLocaleTimeString()
+      }])
     }
 
     reader.readAsArrayBuffer(file)
+  }
+
+  const sendTextMessage = async () => {
+    if (!textInput.trim() || isProcessing) return
+    
+    const userMessage = textInput.trim()
+    setTextInput('')
+    
+    setMessages(prev => [...prev, {
+      id: Date.now(),
+      type: 'user',
+      content: userMessage,
+      timestamp: new Date().toLocaleTimeString()
+    }])
+    
+    setIsProcessing(true)
+    
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: userMessage,
+          history: messages,
+          sheetContext: { columns: columns.map(c => c.name), rowCount: rows.length }
+        })
+      })
+      
+      const data = await response.json()
+      
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: data.response,
+        timestamp: new Date().toLocaleTimeString()
+      }])
+    } catch (error) {
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: 'Sorry, connection failed.',
+        timestamp: new Date().toLocaleTimeString(),
+        isError: true
+      }])
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendTextMessage()
+    }
   }
 
   const startRecording = useCallback(async () => {
@@ -117,17 +177,27 @@ function App() {
       const formData = new FormData()
       formData.append('audio', audioBlob, 'recording.wav')
       formData.append('history', JSON.stringify(messages))
+      formData.append('sheetContext', JSON.stringify({ 
+        columns: columns.map(c => c.name), 
+        rowCount: rows.length 
+      }))
 
       const response = await fetch('/api/chat', { method: 'POST', body: formData })
       const data = await response.json()
       
       setMessages(prev => [
         ...prev,
-        { id: Date.now(), type: 'user', content: data.transcription || '🎤 Voice', timestamp: new Date().toLocaleTimeString() },
+        { id: Date.now(), type: 'user', content: data.transcription || '🎤 Voice message', timestamp: new Date().toLocaleTimeString() },
         { id: Date.now() + 1, type: 'assistant', content: data.response, timestamp: new Date().toLocaleTimeString() }
       ])
     } catch (error) {
-      setMessages(prev => [...prev, { id: Date.now(), type: 'assistant', content: 'Connection failed', timestamp: new Date().toLocaleTimeString(), isError: true }])
+      setMessages(prev => [...prev, { 
+        id: Date.now(), 
+        type: 'assistant', 
+        content: 'Connection failed', 
+        timestamp: new Date().toLocaleTimeString(), 
+        isError: true 
+      }])
     } finally {
       setIsProcessing(false)
     }
@@ -163,6 +233,9 @@ function App() {
             <FileSpreadsheet size={64} />
             <h3>Drop Excel file here</h3>
             <p>.xlsx and .xls only</p>
+            <button className="choose-file-btn" onClick={() => fileInputRef.current?.click()}>
+              Choose File
+            </button>
           </div>
         ) : (
           <div className="excel-wrapper">
@@ -187,26 +260,60 @@ function App() {
               <X size={20} />
             </button>
           </div>
+          
           <div className="panel-messages">
             {messages.length === 0 ? (
               <div className="empty-chat">
-                <div className="big-icon">🎤</div>
-                <p>Press Talk to start speaking</p>
-                <small>{columns.length ? 'Ask about your data' : 'Upload a file first'}</small>
+                <div className="big-icon">💬</div>
+                <p>Type a message or press Talk</p>
+                <small>{columns.length ? 'Ask about your spreadsheet' : 'Upload a file first'}</small>
               </div>
             ) : (
               messages.map(m => <ChatMessage key={m.id} message={m} />)
             )}
-            {isProcessing && <div className="processing">Processing...</div>}
+            {isProcessing && <div className="processing">Thinking...</div>}
           </div>
+
           <div className="panel-input">
             {isRecording && <AudioVisualizer />}
+            
+            <div className="text-input-container">
+              <input
+                type="text"
+                className="text-input"
+                placeholder={isRecording ? "Listening..." : "Type your message..."}
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={isRecording || isProcessing}
+              />
+              <button 
+                className="send-btn"
+                onClick={sendTextMessage}
+                disabled={!textInput.trim() || isProcessing || isRecording}
+              >
+                <Send size={18} />
+              </button>
+            </div>
+
+            <div className="divider"><span>or</span></div>
+
             <button 
               className={`record-btn ${isRecording ? 'recording' : ''}`}
               onClick={toggleRecording}
               disabled={isProcessing}
             >
-              {isRecording ? '⏹ Stop' : isProcessing ? '⏳' : '🎤 Talk'}
+              {isRecording ? (
+                <>
+                  <div className="recording-dot" />
+                  <span>Stop</span>
+                </>
+              ) : (
+                <>
+                  <Mic size={18} />
+                  <span>Talk</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -219,6 +326,7 @@ function App() {
         >
           <Mic size={20} />
           <span>TALK</span>
+          {isRecording && <span className="recording-pulse" />}
         </button>
       )}
     </div>
