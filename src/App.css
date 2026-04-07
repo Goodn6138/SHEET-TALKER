@@ -18,8 +18,8 @@ html, body, #root {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
   background: white;
+  border-bottom: 1px solid #e0e0e0;
   flex-shrink: 0;
 }
 
@@ -43,21 +43,21 @@ h2 { margin: 0; font-size: 20px; }
   white-space: nowrap;
 }
 
-.icon-btn {
+.upload-btn {
   background: none;
   border: none;
   padding: 8px;
   cursor: pointer;
-  color: #666;
+  color: #3b82f6;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.icon-btn:hover { background: #f0f0f0; }
+.upload-btn:hover { background: #eff6ff; }
 
-/* Grid - DON'T override DataGrid classes here */
+/* Grid - CRITICAL: Let DataGrid handle its own layout */
 .grid-container {
   flex: 1;
   padding: 20px;
@@ -74,36 +74,37 @@ h2 { margin: 0; font-size: 20px; }
   justify-content: center;
   color: #9ca3af;
   cursor: pointer;
-  border: 2px dashed #e0e0e0;
-  border-radius: 12px;
   background: white;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
 }
 
 .empty-state h3 { margin: 16px 0 8px; color: #4b5563; }
 
-/* Right Panel - updated styling */
+/* Right Panel */
 .right-panel {
-  width: 350px;
+  width: 300px;
   background: #fff;
   border-left: 1px solid #ccc;
   height: 100%;
   position: fixed;
   right: 0;
   top: 0;
+  padding: 20px;
   box-shadow: -2px 0px 10px rgba(0,0,0,0.15);
   overflow-y: auto;
   z-index: 10;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
-  min-height: 60px;
+  margin-bottom: 20px;
+  min-height: 40px;
 }
 
 .close-btn {
@@ -113,31 +114,31 @@ h2 { margin: 0; font-size: 20px; }
   cursor: pointer;
   color: #666;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.close-btn:hover { background: #e0e0e0; }
+.close-btn:hover { background: #f0f0f0; }
 
 .panel-messages {
   flex: 1;
-  padding: 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #fafafa;
+  margin-bottom: 20px;
 }
 
 .empty-chat {
   text-align: center;
-  padding: 40px 20px;
+  padding: 40px 0;
   color: #9ca3af;
 }
 
 .big-icon { font-size: 48px; margin-bottom: 16px; }
 
 .panel-input {
-  padding: 20px;
-  border-top: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -146,12 +147,11 @@ h2 { margin: 0; font-size: 20px; }
 
 .record-btn {
   width: 100%;
-  padding: 14px;
-  border-radius: 50px;
+  padding: 12px;
+  border-radius: 24px;
   border: none;
   background: #3b82f6;
   color: white;
-  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -192,7 +192,7 @@ h2 { margin: 0; font-size: 20px; }
   align-items: center;
   gap: 4px;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  transition: transform 0.2s;
+  transition: all 0.2s;
 }
 
 .open-panel-btn:hover {
@@ -230,6 +230,7 @@ h2 { margin: 0; font-size: 20px; }
   font-size: 14px;
   background: white;
   border: 1px solid #e0e0e0;
+  line-height: 1.4;
 }
 
 .message.user .bubble {
