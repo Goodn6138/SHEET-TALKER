@@ -1,15 +1,7 @@
 import React, { useState } from "react";
 import DataGrid from "react-data-grid";
 import * as XLSX from "xlsx";
-
-// Kookie UI imports
-import {
-  Button,
-  Card,
-  Flex,
-  Text,
-  Box
-} from "@kushagradhawan/kookie-ui";
+import { Button, Card, Flex, Text, Box } from "@kushagradhawan/kookie-ui";
 
 function App() {
   const [columns, setColumns] = useState([]);
@@ -27,7 +19,6 @@ function App() {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
       if (!jsonData.length) return;
 
       const headers = jsonData[0];
@@ -35,7 +26,7 @@ function App() {
         key: `col_${i}`,
         name: header || `Column ${i + 1}`,
         editable: true,
-        resizable: true
+        resizable: true,
       }));
 
       const formattedRows = jsonData.slice(1).map((row, i) => {
@@ -54,19 +45,19 @@ function App() {
   };
 
   return (
-    <Box css={{ display: "flex", height: "100vh", position: "relative" }}>
-      
+    <Box css={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       {/* MAIN CONTENT */}
-      <Box css={{ flex: 1, display: "flex", flexDirection: "column" }}>
-
+      <Box css={{ flex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
         {/* HEADER + UPLOAD */}
-        <Flex justify="between" align="center" css={{ padding: "20px" }}>
-          <Text size="4" weight="bold">Excel Viewer</Text>
+        <Flex justify="between" align="center" css={{ padding: "20px", zIndex: 1 }}>
+          <Text size="4" weight="bold">
+            Excel Viewer
+          </Text>
           <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
         </Flex>
 
         {/* GRID */}
-        <Box css={{ flex: 1, padding: "20px" }}>
+        <Box css={{ flex: 1, padding: "20px", minHeight: 0 }}>
           <DataGrid
             columns={columns}
             rows={rows}
@@ -74,19 +65,6 @@ function App() {
             style={{ height: "100%" }}
           />
         </Box>
-
-      </Box>
-
-      {/* BUTTON TOP-RIGHT */}
-      <Box css={{
-        position: "fixed",
-        top: 20,
-        right: 20,
-        zIndex: 100
-      }}>
-        <Button size="3" onClick={() => setShowRightPanel(true)}>
-          Open Panel
-        </Button>
       </Box>
 
       {/* RIGHT PANEL */}
@@ -101,17 +79,18 @@ function App() {
             right: 0,
             top: 0,
             padding: "20px",
-            boxShadow: "-2px 0px 8px rgba(0,0,0,0.1)"
+            boxShadow: "-2px 0px 10px rgba(0,0,0,0.15)",
+            zIndex: 10,
+            overflowY: "auto",
           }}
         >
           <Card variant="surface" size="3">
             <Flex direction="column" gap="3">
-              <Text size="3" weight="bold">Panel Content</Text>
+              <Text size="3" weight="bold">
+                Panel Content
+              </Text>
               <Text size="2">Customize this however you want.</Text>
-              <Button
-                onClick={() => setShowRightPanel(false)}
-                size="2"
-              >
+              <Button onClick={() => setShowRightPanel(false)} size="2">
                 Close
               </Button>
             </Flex>
@@ -119,6 +98,19 @@ function App() {
         </Box>
       )}
 
+      {/* BUTTON TOP-RIGHT */}
+      <Box
+        css={{
+          position: "fixed",
+          top: 20,
+          right: 20,
+          zIndex: 20,
+        }}
+      >
+        <Button size="3" onClick={() => setShowRightPanel(true)}>
+          Open Panel
+        </Button>
+      </Box>
     </Box>
   );
 }
