@@ -46,13 +46,11 @@ function App() {
 
   return (
     <Box css={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      {/* MAIN CONTENT */}
+      {/* MAIN GRID AREA */}
       <Box css={{ flex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
         {/* HEADER + UPLOAD */}
         <Flex justify="between" align="center" css={{ padding: "20px", zIndex: 1 }}>
-          <Text size="4" weight="bold">
-            Excel Viewer
-          </Text>
+          <Text size="4" weight="bold">Excel Viewer</Text>
           <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
         </Flex>
 
@@ -86,30 +84,24 @@ function App() {
         >
           <Card variant="surface" size="3">
             <Flex direction="column" gap="3">
-              <Text size="3" weight="bold">
-                Panel Content
-              </Text>
-              <Text size="2">Customize this however you want.</Text>
-              <Button onClick={() => setShowRightPanel(false)} size="2">
-                Close
-              </Button>
+              <Text size="3" weight="bold">Panel Content</Text>
+              <Text size="2">You can put anything here.</Text>
+              <Button onClick={() => setShowRightPanel(false)} size="2">Close</Button>
             </Flex>
           </Card>
         </Box>
       )}
 
-      {/* BUTTON TOP-RIGHT */}
+      {/* BUTTON BOTTOM-RIGHT */}
       <Box
         css={{
           position: "fixed",
-          top: 20,
+          bottom: 20,
           right: 20,
           zIndex: 20,
         }}
       >
-        <Button size="3" onClick={() => setShowRightPanel(true)}>
-          Open Panel
-        </Button>
+        <Button size="3" onClick={() => setShowRightPanel(true)}>Open Panel</Button>
       </Box>
     </Box>
   );
