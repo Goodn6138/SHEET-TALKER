@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { Mic, X, MessageSquare, Upload, FileSpreadsheet } from 'lucide-react'
+import { Mic, X, Upload, FileSpreadsheet } from 'lucide-react'
 import Spreadsheet from './components/Spreadsheet'
 import ChatPanel from './components/ChatPanel'
 import * as XLSX from 'xlsx'
@@ -25,16 +25,17 @@ function App() {
   const handleFileUpload = (file) => {
     if (!file) return
     
-    // Validate file type
+    // Excel only validation
     const validTypes = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'application/vnd.ms-excel',
-      'text/csv',
       'application/vnd.ms-excel.sheet.macroEnabled.12'
     ]
     
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
-      alert('Please upload a valid Excel file (.xlsx, .xls) or CSV file')
+    const isExcel = validTypes.includes(file.type) || file.name.match(/\.(xlsx|xls)$/i)
+    
+    if (!isExcel) {
+      alert('Please upload a valid Excel file (.xlsx or .xls)')
       return
     }
 
@@ -44,16 +45,14 @@ function App() {
         const data = new Uint8Array(e.target.result)
         const workbook = XLSX.read(data, { 
           type: 'array',
-          cellFormula: true,
-          cellNF: true,
-          cellStyles: true
+          raw: false,
+          cellFormula: true
         })
         
-        // Get first sheet
         const firstSheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[firstSheetName]
         
-        // Convert to JSON with header: 1 to get array of arrays
+        // Get the data as array of arrays
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
           header: 1,
           defval: '',
@@ -61,71 +60,76 @@ function App() {
         })
         
         if (jsonData.length === 0) {
-          alert('No data found in the file')
+          alert('No data found in the Excel file')
           return
         }
 
-        // Filter out completely empty rows
+        // Clean up - remove completely empty rows
         const cleanData = jsonData.filter(row => 
           row.some(cell => cell !== '' && cell !== null && cell !== undefined)
         )
 
-        if (cleanData.length < 1) {
-          alert('No valid data found in the file')
+        if (cleanData.length < 2) { // Need at least header + 1 data row
+          alert('Excel file needs at least a header row and one data row')
           return
         }
 
-        // First row as headers
+        // First row is headers
         const rawHeaders = cleanData[0]
         
-        // Create safe keys for columns (handle duplicates, special chars, empty headers)
-        const headerMap = new Map()
-        const columns = rawHeaders.map((header, index) => {
-          let baseKey = String(header || `Column_${index + 1}`)
-            .trim()
-            .replace(/[^a-zA-Z0-9_]/g, '_')
+        // Create columns with safe keys
+        const columns = []
+        const keyMap = {} // Map to track original header to safe key
+        
+        rawHeaders.forEach((header, index) => {
+          const originalHeader = String(header || `Column_${index + 1}`).trim()
+          // Create safe key: lowercase, no spaces/special chars
+          let safeKey = originalHeader
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '_')
+            .replace(/_+/g, '_')
             .replace(/^_+|_+$/g, '')
           
-          if (!baseKey || baseKey === '') baseKey = `Column_${index + 1}`
+          if (!safeKey) safeKey = `col_${index}`
           
           // Handle duplicates
-          let uniqueKey = baseKey
+          let uniqueKey = safeKey
           let counter = 1
-          while (headerMap.has(uniqueKey)) {
-            uniqueKey = `${baseKey}_${counter}`
+          while (keyMap[uniqueKey]) {
+            uniqueKey = `${safeKey}_${counter}`
             counter++
           }
-          headerMap.set(uniqueKey, header)
+          keyMap[uniqueKey] = originalHeader
           
-          return {
+          columns.push({
             key: uniqueKey,
-            name: String(header || `Column ${index + 1}`),
+            name: originalHeader,
             resizable: true,
             sortable: true,
             editable: true,
-            width: Math.max(120, String(header).length * 12)
-          }
+            width: Math.max(120, Math.min(300, originalHeader.length * 10))
+          })
         })
 
-        // Create rows with proper keys matching columns
+        // Create rows using the SAME keys as columns
         const rows = cleanData.slice(1).map((row, rowIndex) => {
-          const obj = { id: rowIndex + 1 }
+          const rowObj = { id: rowIndex + 1 }
           columns.forEach((col, colIndex) => {
-            const value = row[colIndex]
-            // Handle different data types
-            if (typeof value === 'number') {
-              obj[col.key] = value
-            } else if (value instanceof Date) {
-              obj[col.key] = value.toISOString().split('T')[0]
+            const cellValue = row[colIndex]
+            // Preserve numbers, convert rest to string
+            if (typeof cellValue === 'number') {
+              rowObj[col.key] = cellValue
+            } else if (cellValue instanceof Date) {
+              rowObj[col.key] = cellValue.toLocaleDateString()
             } else {
-              obj[col.key] = value !== undefined ? String(value) : ''
+              rowObj[col.key] = cellValue !== undefined && cellValue !== null ? String(cellValue) : ''
             }
           })
-          return obj
+          return rowObj
         })
 
-        console.log('Parsed columns:', columns)
-        console.log('Parsed rows:', rows)
+        console.log('Columns:', columns)
+        console.log('First row:', rows[0])
 
         setSheetData({ columns, rows })
         setFileName(file.name)
@@ -133,20 +137,17 @@ function App() {
         setMessages(prev => [...prev, {
           id: Date.now(),
           type: 'assistant',
-          content: `📄 Loaded "${file.name}"\n• ${rows.length} rows\n• ${columns.length} columns\n• Headers: ${columns.map(c => c.name).join(', ')}`,
+          content: `📄 Loaded "${file.name}"\n• ${rows.length} rows × ${columns.length} columns`,
           timestamp: new Date().toLocaleTimeString()
         }])
         
       } catch (error) {
-        console.error('Error parsing file:', error)
-        alert(`Error parsing file: ${error.message}`)
+        console.error('Error parsing Excel:', error)
+        alert(`Error parsing Excel file: ${error.message}`)
       }
     }
     
-    reader.onerror = () => {
-      alert('Error reading file')
-    }
-    
+    reader.onerror = () => alert('Error reading file')
     reader.readAsArrayBuffer(file)
   }
 
@@ -162,16 +163,14 @@ function App() {
     setIsDragging(true)
   }
 
-  const onDragLeave = () => {
-    setIsDragging(false)
-  }
+  const onDragLeave = () => setIsDragging(false)
 
   const onFileInputChange = (e) => {
     const file = e.target.files[0]
     if (file) handleFileUpload(file)
   }
 
-  // Audio recording handlers
+  // Audio recording
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -180,9 +179,7 @@ function App() {
       audioChunksRef.current = []
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
-        }
+        if (event.data.size > 0) audioChunksRef.current.push(event.data)
       }
 
       mediaRecorder.onstop = async () => {
@@ -194,7 +191,6 @@ function App() {
       mediaRecorder.start()
       setIsRecording(true)
     } catch (error) {
-      console.error('Error accessing microphone:', error)
       alert('Could not access microphone.')
     }
   }, [])
@@ -215,16 +211,12 @@ function App() {
       formData.append('sheetContext', JSON.stringify({
         columns: sheetData.columns.map(c => c.name),
         rowCount: sheetData.rows.length,
-        sample: sheetData.rows.slice(0, 5)
+        preview: sheetData.rows.slice(0, 3)
       }))
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) throw new Error('Failed to get response')
-
+      const response = await fetch('/api/chat', { method: 'POST', body: formData })
+      if (!response.ok) throw new Error('Failed')
+      
       const data = await response.json()
       
       setMessages(prev => [
@@ -242,27 +234,11 @@ function App() {
           timestamp: new Date().toLocaleTimeString()
         }
       ])
-
-      if (data.sheetUpdate) {
-        setSheetData(data.sheetUpdate)
-      }
     } catch (error) {
-      console.error('Error:', error)
       setMessages(prev => [
         ...prev,
-        { 
-          id: Date.now(), 
-          type: 'user', 
-          content: '🎤 Voice message',
-          timestamp: new Date().toLocaleTimeString()
-        },
-        { 
-          id: Date.now() + 1, 
-          type: 'assistant', 
-          content: 'Sorry, I could not process that. Backend connection failed.',
-          timestamp: new Date().toLocaleTimeString(),
-          isError: true
-        }
+        { id: Date.now(), type: 'user', content: '🎤 Voice message', timestamp: new Date().toLocaleTimeString() },
+        { id: Date.now() + 1, type: 'assistant', content: 'Sorry, connection failed.', timestamp: new Date().toLocaleTimeString(), isError: true }
       ])
     } finally {
       setIsProcessing(false)
@@ -282,7 +258,7 @@ function App() {
             <h1>SHEET TALKER</h1>
             {fileName && (
               <span className="file-badge" title={fileName}>
-                📄 {fileName.length > 20 ? fileName.substring(0, 20) + '...' : fileName}
+                📄 {fileName.length > 25 ? fileName.substring(0, 25) + '...' : fileName}
               </span>
             )}
           </div>
@@ -291,23 +267,17 @@ function App() {
               type="file"
               ref={fileInputRef}
               onChange={onFileInputChange}
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.xls"
               style={{ display: 'none' }}
             />
             <button 
               className="icon-btn upload-btn"
               onClick={() => fileInputRef.current?.click()}
-              title="Upload spreadsheet"
+              title="Upload Excel file"
             >
               <Upload size={20} />
             </button>
-            <button 
-              className="icon-btn"
-              onClick={() => setIsPanelOpen(!isPanelOpen)}
-              aria-label="Toggle chat"
-            >
-              <MessageSquare size={20} />
-            </button>
+            {/* CHAT ICON REMOVED - only TALK button opens panel */}
           </div>
         </header>
         
@@ -321,13 +291,13 @@ function App() {
             <div className="empty-upload-state">
               <FileSpreadsheet size={64} className="empty-icon-svg" />
               <h3>Drop your Excel file here</h3>
-              <p>Supports .xlsx, .xls, and .csv files</p>
+              <p>Supports .xlsx and .xls files only</p>
               <button 
                 className="upload-btn-large"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload size={20} />
-                Choose File
+                Choose Excel File
               </button>
             </div>
           ) : (
@@ -350,6 +320,7 @@ function App() {
         hasSheetData={sheetData.columns.length > 0}
       />
 
+      {/* Only way to open chat is via this FAB */}
       {!isPanelOpen && (
         <button 
           className={`talk-fab ${isRecording ? 'recording' : ''}`}
