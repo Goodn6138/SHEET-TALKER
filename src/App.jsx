@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DataGrid from "react-data-grid";
 import * as XLSX from "xlsx";
-import { Button, Card, Flex, Text, Box } from "@kushagradhawan/kookie-ui";
+import "./App.css"; // optional for custom styling
 
 function App() {
   const [columns, setColumns] = useState([]);
@@ -45,65 +45,40 @@ function App() {
   };
 
   return (
-    <Box css={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      {/* MAIN GRID AREA */}
-      <Box css={{ flex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
-        {/* HEADER + UPLOAD */}
-        <Flex justify="between" align="center" css={{ padding: "20px", zIndex: 1 }}>
-          <Text size="4" weight="bold">Excel Viewer</Text>
-          <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
-        </Flex>
+    <div className="app-container">
+      {/* HEADER */}
+      <div className="header">
+        <h2>Excel Viewer</h2>
+        <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
+      </div>
 
-        {/* GRID */}
-        <Box css={{ flex: 1, padding: "20px", minHeight: 0 }}>
-          <DataGrid
-            columns={columns}
-            rows={rows}
-            onRowsChange={setRows}
-            style={{ height: "100%" }}
-          />
-        </Box>
-      </Box>
+      {/* GRID */}
+      <div className="grid-container">
+        <DataGrid
+          columns={columns}
+          rows={rows}
+          onRowsChange={setRows}
+          style={{ height: "100%" }}
+        />
+      </div>
 
       {/* RIGHT PANEL */}
       {showRightPanel && (
-        <Box
-          css={{
-            width: "300px",
-            background: "#fff",
-            borderLeft: "1px solid #e0e0e0",
-            height: "100%",
-            position: "fixed",
-            right: 0,
-            top: 0,
-            padding: "20px",
-            boxShadow: "-2px 0px 10px rgba(0,0,0,0.15)",
-            zIndex: 10,
-            overflowY: "auto",
-          }}
-        >
-          <Card variant="surface" size="3">
-            <Flex direction="column" gap="3">
-              <Text size="3" weight="bold">Panel Content</Text>
-              <Text size="2">You can put anything here.</Text>
-              <Button onClick={() => setShowRightPanel(false)} size="2">Close</Button>
-            </Flex>
-          </Card>
-        </Box>
+        <div className="right-panel">
+          <h3>Panel Content</h3>
+          <p>Add whatever you want here.</p>
+          <button onClick={() => setShowRightPanel(false)}>Close</button>
+        </div>
       )}
 
       {/* BUTTON BOTTOM-RIGHT */}
-      <Box
-        css={{
-          position: "fixed",
-          bottom: 20,
-          right: 20,
-          zIndex: 20,
-        }}
+      <button
+        className="open-panel-btn"
+        onClick={() => setShowRightPanel(true)}
       >
-        <Button size="3" onClick={() => setShowRightPanel(true)}>Open Panel</Button>
-      </Box>
-    </Box>
+        Open Panel
+      </button>
+    </div>
   );
 }
 
